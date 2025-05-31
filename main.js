@@ -1,4 +1,13 @@
 const fs = require('fs');
+const path = require('path');
+
+// Create output directory if not exists
+const outputDir = path.join(__dirname, '100 3D Sudokus');
+if (!fs.existsSync(outputDir)) {
+  fs.mkdirSync(outputDir);
+}
+
+// === Sudoku Generation Utilities ===
 
 function isSafe(board, row, col, num) {
   for (let x = 0; x < 9; x++) {
@@ -56,19 +65,26 @@ function transformSudoku(board, shift) {
   );
 }
 
-const baseBoard = generateSudoku();
-const allBoards = [];
+// === Main Loop to Generate 100 Files ===
 
-// Add base board first
-allBoards.push(baseBoard.map(row => row.map(cell => cell.toString())));
+for (let i = 1; i <= 100; i++) {
+  const baseBoard = generateSudoku();
+  const allBoards = [];
 
-// Generate 8 more transformations by shifting numbers 1 to 8
-for (let shift = 1; shift <= 8; shift++) {
-  const newBoard = transformSudoku(baseBoard, shift);
-  allBoards.push(newBoard);
+  // Add base board
+  allBoards.push(baseBoard.map(row => row.map(cell => cell.toString())));
+
+  // Add 8 shifted variants
+  for (let shift = 1; shift <= 8; shift++) {
+    const variant = transformSudoku(baseBoard, shift);
+    allBoards.push(variant);
+  }
+
+  const filename = `sudoku-${String(i).padStart(3, '0')}.json`;
+  const filePath = path.join(outputDir, filename);
+
+  fs.writeFileSync(filePath, JSON.stringify(allBoards, null, 2), 'utf8');
+  console.log(`✔ Saved ${filename}`);
 }
 
-// Write all 9 boards to a file
-fs.writeFileSync('sudoku_variants.json', JSON.stringify(allBoards, null, 2), 'utf8');
-
-console.log('Generated 9 sudoku variants written to sudoku_variants.json');
+console.log('✅ All 100 Sudoku files generated in "100 3D Sudokus"');
